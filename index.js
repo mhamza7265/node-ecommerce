@@ -47,6 +47,10 @@ app.use(express.static("files"));
 connectToDB();
 
 //route
+app.get("/", async(req, res) => {
+  return res.json("Hello World!");
+});
+
 app.post(
   "/category/add",
   upload.any(),
