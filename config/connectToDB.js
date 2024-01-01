@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const {MongoClient, ServerApiVersion} = require("mongodb");
 
 const connectToDB = async() => {
     try{
