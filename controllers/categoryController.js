@@ -4,7 +4,6 @@ const addCategory = async (req, res) => {
   const name = req.body.name;
   const description = req.body.description;
   const image = req.files[0].path.replaceAll("\\", "/").replace("files/", "");
-  console.log(image);
   try {
     const created = await Category.create({
       isActive: true,
@@ -24,7 +23,6 @@ const addCategory = async (req, res) => {
 const getAllCategories = async (req, res) => {
   try {
     const resp = await Category.find();
-    console.log("all categories", resp);
     return res.json({ status: true, categories: resp });
   } catch (err) {
     await res.json({ status: false, Error: err });
@@ -38,7 +36,6 @@ const updateCategory = async (req, res) => {
   };
   const bodyData = req.body;
   Object.assign(bodyData, image);
-  console.log("cat data", bodyData);
   try {
     const updated = await Category.updateOne({ _id: id }, bodyData);
     return res.json({ status: true, updated });
@@ -51,7 +48,6 @@ const getSingleCategory = async (req, res) => {
   const id = req.params.id;
   try {
     const curProduct = await Category.findOne({ _id: id });
-    console.log(curProduct);
     return res.json({ status: true, curProduct });
   } catch (err) {
     return res.json({ status: false, Error: err });

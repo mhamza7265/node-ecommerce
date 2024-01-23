@@ -2,17 +2,18 @@ const Category = require("../models/categoryModel");
 const Product = require("../models/productModel");
 
 const addProduct = async (req, res) => {
-  // console.log("body", req.body);
   const category = req.body.category;
   const sku = req.body.sku;
+  const name = req.body.name;
   const discount = req.body.discount;
   const imagesPaths = req.files.map((item) => {
     return item.path.replaceAll("\\", "/").replace("files/", "");
   });
   try {
     const skuExists = await Product.find({ sku: sku });
-    if (skuExists.length > 0) {
-      return res.json({ status: false, Error: "sku already exists!" });
+    const nameExists = await Product.find({ name });
+    if (skuExists.length > 0 || nameExists.length > 0) {
+      return res.json({ status: false, Error: "Product already exists!" });
     }
 
     const findCategory = await Category.find({ _id: category });

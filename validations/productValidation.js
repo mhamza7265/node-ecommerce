@@ -13,6 +13,7 @@ module.exports = {
       .withMessage("Applicable field is required!"),
   ],
   handleProductValidationErrors: (req, res, next) => {
+    console.log("valBody", req.body);
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.json({ status: false, errors });
