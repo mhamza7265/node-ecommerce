@@ -94,6 +94,29 @@ const deleteSingleProduct = async (req, res) => {
   }
 };
 
+const filterProducts = async (req, res) => {
+  const product = req.body.products;
+  console.log("products", product);
+  try {
+    // const filteredProducts = await Product.aggregate([
+    //   { $match: { name: { $in: newProductString } } },
+    // ]);
+    const filtered = await Product.find({
+      name: { $regex: product, $options: "i" },
+    });
+    console.log("filter", filtered);
+    if (product !== "") {
+      return res.status(200).json({ status: true, filtered });
+    } else {
+      return res
+        .status(500)
+        .json({ status: false, error: "No product Found!" });
+    }
+  } catch (err) {
+    return res.status(500).json({ status: false, error: "No product found!" });
+  }
+};
+
 module.exports = {
   addProduct,
   getAllProducts,
@@ -101,4 +124,5 @@ module.exports = {
   updateProduct,
   getProductsByCategory,
   deleteSingleProduct,
+  filterProducts,
 };

@@ -36,7 +36,7 @@ const calculate = (type, quantity, price, discount) => {
     case "subTotal":
       return price * quantity;
     case "total":
-      return price * quantity - (price / 100) * discount;
+      return ((price * quantity) / 100) * discount;
   }
 };
 
@@ -50,4 +50,28 @@ const calculateGrands = (cartItems) => {
   return { subTotal, grandTotal };
 };
 
-module.exports = { configureCart, calculate, calculateGrands };
+const checkoutConfig = (data) => {
+  const d = Date();
+  const checkout = {
+    status: "processing",
+    orderDate: d.toLocaleString(),
+    transactionId: Math.floor(Math.random() * 100000000000),
+    paymentId: Math.floor(Math.random() * 100000000000),
+    paymentType: data.paymentType,
+    cartId: data.cartId,
+    userId: data.userId,
+    cartItems: data.cartItems,
+    subTotal: data.subTotal,
+    discount: data.discount,
+    grandTotal: data.grandTotal,
+    userDetails: {
+      address: data.address,
+      city: data.city,
+      state: data.state,
+      country: data.country,
+    },
+  };
+  return checkout;
+};
+
+module.exports = { configureCart, calculate, calculateGrands, checkoutConfig };

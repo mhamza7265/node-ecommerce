@@ -70,6 +70,49 @@ const loginUser = async (req, res) => {
   }
 };
 
+const editUser = async (req, res) => {
+  const currentPw = req.body.current_pw;
+  const newPw = req.body.new_pw;
+  const userId = req.headers.id;
+  console.log("newPw", newPw);
+  console.log("currentPw", currentPw);
+  if (newPw !== "" && newPw !== undefined && newPw !== null) {
+    if (currentPw == null || currentPw == undefined || currentPw == "") {
+      return res
+        .status(500)
+        .json({ status: false, error: "Please enter current password!" });
+    }
+  }
+  try {
+    const userObj = {
+      firstName: req.body.first_name,
+      lastName: req.body.last_name,
+    };
+    const user = await User.findOne({ _id: userId });
+    if (currentPw !== null && currentPw !== undefined && currentPw !== "") {
+      const comparePw = await bcrypt.compare(currentPw, user.password);
+      console.log("compare", comparePw);
+      if (comparePw && newPw !== undefined) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPw, salt);
+        userObj["password"] = hashedPassword;
+      } else if (!comparePw) {
+        return res.status(500).json({
+          status: false,
+          error: "Wrong password, try with correct password again!",
+        });
+      }
+    }
+
+    const updated = await User.updateOne({ _id: userId }, userObj);
+    return res
+      .status(200)
+      .json({ status: true, updated, message: "User record updated!" });
+  } catch (err) {
+    return res.status(500).json({ status: false, error: err });
+  }
+};
+
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find();
@@ -100,4 +143,10 @@ const getCurrentUser = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, getAllUsers, getCurrentUser };
+module.exports = {
+  registerUser,
+  loginUser,
+  editUser,
+  getAllUsers,
+  getCurrentUser,
+};
