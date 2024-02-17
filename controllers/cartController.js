@@ -10,7 +10,9 @@ const createCart = async (req, res) => {
   const userId = req.headers.id;
   const prodId = req.body.id;
   let requestedQuantity = req.body.quantity;
+  let requestedCalcQuantity = req.body.quantity;
   let decreaseQuantity = req.body.decreaseQuantity;
+  let increaseQuantity = req.body.increaseQuantity;
   console.log("quantity", requestedQuantity);
   try {
     const product = await Product.findOne({ _id: prodId });
@@ -23,10 +25,10 @@ const createCart = async (req, res) => {
     let cartStatusPending = await Cart.findOne({ userId, status: 1 });
 
     if (!decreaseQuantity) {
-      if (productQuantity < requestedQuantity) {
+      if (productQuantity < requestedCalcQuantity) {
         return res.json({
           status: false,
-          error: "Requested quantity is not available is stocks!",
+          error: "Requested quantity is not available in the stocks!",
         });
       }
     }
@@ -60,8 +62,9 @@ const createCart = async (req, res) => {
         if (!decreaseQuantity) {
           await Product.updateOne(
             { _id: prodId },
-            { quantity: productQuantity - requestedQuantity }
+            { quantity: productQuantity - requestedCalcQuantity }
           );
+          console.log("decreased1");
         }
 
         return res.json({
@@ -99,19 +102,24 @@ const createCart = async (req, res) => {
         if (!decreaseQuantity) {
           await Product.updateOne(
             { _id: prodId },
-            { quantity: productQuantity - requestedQuantity }
+            { quantity: productQuantity - requestedCalcQuantity }
           );
+          console.log("reqQuantity", requestedCalcQuantity);
+          console.log("decreased2");
         } else {
           await Product.updateOne(
             { _id: prodId },
-            { quantity: productQuantity + requestedQuantity }
+            { quantity: productQuantity + requestedCalcQuantity }
           );
         }
 
         return res.status(200).json({
           status: true,
           cart: cartStatusPending,
-          message: "Product added into the cart!",
+          message:
+            increaseQuantity || decreaseQuantity
+              ? "Cart updated!"
+              : "Product added into the cart!",
         });
       } catch (error) {
         console.error("Error saving cart:", error);

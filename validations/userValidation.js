@@ -17,6 +17,7 @@ module.exports = {
     body("role").exists().withMessage("User role is required!"),
   ],
   handleUserValidationErrors: (req, res, next) => {
+    console.log("user", req.body);
     const error = validationResult(req);
     if (!error.isEmpty()) {
       return res.json({ status: false, Error: error.array() });

@@ -59,9 +59,15 @@ const createCheckout = async (req, res) => {
 
 const orderDetails = async (req, res) => {
   const userId = req.headers.id;
+  const role = req.headers.role;
   try {
-    const orders = await Checkout.find({ userId });
-    return res.status(200).json({ status: true, orders });
+    if (role == "admin") {
+      const orders = await Checkout.find();
+      return res.status(200).json({ status: true, orders });
+    } else {
+      const orders = await Checkout.find({ userId });
+      return res.status(200).json({ status: true, orders });
+    }
   } catch (err) {
     return res.status(500).json({ status: false, error: err });
   }
@@ -111,8 +117,6 @@ const createPayment = async (req, res) => {
 };
 
 const paymentIntent = async (req, res) => {
-  console.log("body", req.body);
-  console.log("get", req.get("user-agent"));
   const userId = req.headers.id;
   const cart = await Cart.findOne({ userId, status: 1 });
   try {
@@ -135,7 +139,7 @@ const paymentIntent = async (req, res) => {
         },
       },
     });
-    res.json({
+    res.status(200).json({
       client_secret: intent.client_secret,
       status: intent.status,
     });
@@ -146,6 +150,41 @@ const paymentIntent = async (req, res) => {
   }
 };
 
+const getAllOrders = async (req, res) => {
+  const userId = req.params.id;
+  console.log("userId", userId);
+  try {
+    const orders = await Checkout.find({ userId });
+    return res.status(200).json({ status: true, orders });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ status: false, error: "Error in finding orders" });
+  }
+};
+
+const processOrder = async (req, res) => {
+  const orderId = req.body.orderId;
+  const orderStatus = req.body.orderStatus;
+  try {
+    const updated = await Checkout.updateOne(
+      { _id: orderId },
+      { status: orderStatus }
+    );
+    if (updated.acknowledged) {
+      const updatedOrder = await Checkout.findOne({ _id: orderId });
+
+      return res
+        .status(200)
+        .json({ status: true, updated: true, updatedOrder });
+    }
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ status: false, error: "Error in updating order" });
+  }
+};
+
 module.exports = {
   createCheckout,
   orderDetails,
@@ -153,4 +192,6 @@ module.exports = {
   orderStatus,
   createPayment,
   paymentIntent,
+  getAllOrders,
+  processOrder,
 };

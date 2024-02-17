@@ -4,7 +4,16 @@ require("dotenv").config();
 const User = require("../models/userModel");
 
 const registerUser = async (req, res) => {
-  const { email, firstName, middleName, lastName, role, password } = req.body;
+  const {
+    email,
+    firstName,
+    middleName,
+    lastName,
+    role,
+    password,
+    passwordCreated,
+  } = req.body;
+  console.log("user", req.body);
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
   try {
@@ -17,6 +26,10 @@ const registerUser = async (req, res) => {
         lastName,
         password: hashedPassword,
         role,
+        passwordCreated:
+          passwordCreated !== null && passwordCreated !== undefined
+            ? passwordCreated
+            : true,
       });
       return res.json({
         status: true,
@@ -49,6 +62,7 @@ const loginUser = async (req, res) => {
         middleName: getUser.middleName,
         lastName: getUser.lastName,
         role: getUser.role,
+        passwordCreated: getUser.passwordCreated,
       },
       process.env.JWT_SECRET
     );
@@ -143,10 +157,53 @@ const getCurrentUser = async (req, res) => {
   }
 };
 
+const updatePassword = async (req, res) => {
+  const currentPw = req.body.current_pw;
+  const newPw = req.body.new_pw;
+  try {
+    const verify = jwt.verify(
+      req.headers.authorization.replace("Bearer ", ""),
+      process.env.JWT_SECRET
+    );
+
+    const userId = verify.id;
+    const user = await User.findOne({ _id: userId });
+    const comparePw = await bcrypt.compare(currentPw, user.password);
+    console.log("compare", comparePw);
+
+    if (comparePw) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(newPw, salt);
+      const updated = await User.updateOne(
+        { _id: userId },
+        {
+          password: hashedPassword,
+          passwordCreated: true,
+        }
+      );
+      console.log("update", updated);
+      if (updated.acknowledged) {
+        return res
+          .status(200)
+          .json({ status: true, passwordUpdated: "Password updated!" });
+      } else {
+        return res
+          .status(500)
+          .json({ status: false, error: "Internal server error" });
+      }
+    } else {
+      return res
+        .status(500)
+        .json({ status: false, error: "Wrong current password" });
+    }
+  } catch (err) {}
+};
+
 module.exports = {
   registerUser,
   loginUser,
   editUser,
   getAllUsers,
   getCurrentUser,
+  updatePassword,
 };

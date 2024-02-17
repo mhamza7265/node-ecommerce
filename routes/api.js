@@ -53,6 +53,7 @@ const {
   getSingleProduct,
   updateProduct,
   filterProducts,
+  productAvailableQuantity,
 } = require("../controllers/productController");
 
 const {
@@ -61,6 +62,7 @@ const {
   editUser,
   getAllUsers,
   getCurrentUser,
+  updatePassword,
 } = require("../controllers/userController");
 
 const {
@@ -86,6 +88,8 @@ const {
   orderStatus,
   createPayment,
   paymentIntent,
+  getAllOrders,
+  processOrder,
 } = require("../controllers/checkoutController");
 
 const {
@@ -93,6 +97,16 @@ const {
   wishlistQuantity,
   getWishlist,
 } = require("../controllers/wishlistController");
+
+const {
+  initiateLogin,
+  handleGoogleLogin,
+} = require("../controllers/googleAuthController");
+
+const {
+  initiateFBLogin,
+  handleFBLogin,
+} = require("../controllers/facebookAuthController");
 
 /**********************************************************************************************************/
 
@@ -105,11 +119,16 @@ const storageEngine = multer.diskStorage({
 });
 
 const upload = multer({ storage: storageEngine });
-
 //routes
 app.get("/", async (req, res) => {
   return res.json("Hello World!");
 });
+
+app.get("/auth/google", initiateLogin);
+app.get("/auth/google/callback", handleGoogleLogin);
+
+app.get("/auth/facebook", initiateFBLogin);
+app.get("/auth/facebook/callback", handleFBLogin);
 
 app.get("/category", getAllCategories);
 app.get("/category/:id", getSingleCategory);
@@ -118,9 +137,12 @@ app.get("/product", getAllProducts);
 app.get("/product/single/:id", getSingleProduct);
 app.get("/product/:id", getProductsByCategory);
 app.post("/products/filter", filterProducts);
+app.get("/product/quantity/:prodId", productAvailableQuantity);
 
 app.post("/register", userValidation, handleUserValidationErrors, registerUser);
 app.post("/login", loginUser);
+
+app.post("/user/password", updatePassword);
 
 app.use(upload.any(), authMiddleware); //auth middleware
 app.get("/users", getAllUsers);
@@ -187,4 +209,7 @@ app.post(
 );
 app.delete("/product/:id", deleteSingleProduct);
 app.put("/product/:id", upload.any(), updateProduct);
+app.get("/customerorders/:id", getAllOrders);
+app.put("/order/process", processOrder);
+
 module.exports = app;

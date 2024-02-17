@@ -9,7 +9,16 @@ const authenticateUser = async (req, res, next) => {
     );
     if (verify) {
       req.headers = verify;
-      next();
+      if (!verify.passwordCreated) {
+        return res.json({
+          status: false,
+          type: "updatePassword",
+          error: "Update password first",
+        });
+        // return res.redirect("http://localhost:5173/updatePw");
+      } else {
+        next();
+      }
     }
   } catch (err) {
     return res.json({ status: false, error: "Login token required!" });

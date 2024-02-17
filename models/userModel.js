@@ -36,6 +36,10 @@ const userSchema = new mongoose.Schema({
     default: "Basic",
     required: true,
   },
+  passwordCreated: {
+    type: Boolean,
+    required: true,
+  },
 });
 
 const User = mongoose.model("User", userSchema);

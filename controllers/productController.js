@@ -117,6 +117,21 @@ const filterProducts = async (req, res) => {
   }
 };
 
+const productAvailableQuantity = async (req, res) => {
+  const prodId = req.params.prodId;
+  try {
+    const product = await Product.findOne({ _id: prodId });
+    return res
+      .status(200)
+      .json({ status: true, availableQuantity: product.quantity });
+  } catch (err) {
+    return res.status(500).json({
+      status: false,
+      error: "Request could not be processed, try again later",
+    });
+  }
+};
+
 module.exports = {
   addProduct,
   getAllProducts,
@@ -125,4 +140,5 @@ module.exports = {
   getProductsByCategory,
   deleteSingleProduct,
   filterProducts,
+  productAvailableQuantity,
 };
