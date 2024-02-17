@@ -80,7 +80,7 @@ const loginUser = async (req, res) => {
       return res.json({ status: false, login: "No user found!" });
     }
   } catch (err) {
-    return res.json({ status: false, error: "Wrong password or email" });
+    return res.json({ status: false, login: "Wrong password or email" });
   }
 };
 

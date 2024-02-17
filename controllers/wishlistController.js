@@ -6,7 +6,11 @@ const configureWishlist = async (req, res) => {
   try {
     const product = await Product.findOne({ _id: req.body.prodId });
     const wishListItem = await Wishlist.findOne({ productId: req.body.prodId });
-    if (wishListItem == null && product !== null) {
+    if (
+      (wishListItem == null || wishListItem == undefined) &&
+      product !== null &&
+      product !== undefined
+    ) {
       const wishlist = await Wishlist.create({
         userId,
         productId: req.body.prodId,
@@ -17,7 +21,12 @@ const configureWishlist = async (req, res) => {
         wishlist,
         message: "Product added into wishlist!",
       });
-    } else if (wishListItem !== null && product !== null) {
+    } else if (
+      wishListItem !== null &&
+      wishListItem !== undefined &&
+      product !== null &&
+      product !== undefined
+    ) {
       const wishListUpdated = await Wishlist.deleteOne({
         productId: req.body.prodId,
       });
