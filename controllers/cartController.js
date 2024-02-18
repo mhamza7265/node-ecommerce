@@ -13,13 +13,10 @@ const createCart = async (req, res) => {
   let requestedCalcQuantity = req.body.quantity;
   let decreaseQuantity = req.body.decreaseQuantity;
   let increaseQuantity = req.body.increaseQuantity;
-  console.log("quantity", requestedQuantity);
   try {
     const product = await Product.findOne({ _id: prodId });
     if (!product)
       return res.send({ status: false, message: "Cannot find product." });
-    console.log("prodid", prodId);
-    console.log("prod", product);
     let productQuantity = product.quantity;
 
     let cartStatusPending = await Cart.findOne({ userId, status: 1 });
@@ -35,10 +32,7 @@ const createCart = async (req, res) => {
     if (!cartStatusPending) {
       const cartItem = configureCart(prodId, product, requestedQuantity);
 
-      console.log("cartItem", cartItem);
-
       try {
-        console.log("calc", requestedQuantity);
         const cart = await Cart.create({
           userId,
           status: 1,
@@ -64,7 +58,6 @@ const createCart = async (req, res) => {
             { _id: prodId },
             { quantity: productQuantity - requestedCalcQuantity }
           );
-          console.log("decreased1");
         }
 
         return res.json({
@@ -104,8 +97,6 @@ const createCart = async (req, res) => {
             { _id: prodId },
             { quantity: productQuantity - requestedCalcQuantity }
           );
-          console.log("reqQuantity", requestedCalcQuantity);
-          console.log("decreased2");
         } else {
           await Product.updateOne(
             { _id: prodId },

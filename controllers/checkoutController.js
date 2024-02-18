@@ -23,7 +23,6 @@ const createCheckout = async (req, res) => {
     paymentType: req.body.paymentType,
   };
   const response = checkoutConfig(data);
-  console.log("res", response);
   try {
     const userAddress = await Address.findOne({ userId });
     if (userAddress) {
@@ -152,7 +151,6 @@ const paymentIntent = async (req, res) => {
 
 const getAllOrders = async (req, res) => {
   const userId = req.params.id;
-  console.log("userId", userId);
   try {
     const orders = await Checkout.find({ userId });
     return res.status(200).json({ status: true, orders });

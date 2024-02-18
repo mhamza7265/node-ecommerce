@@ -23,7 +23,6 @@ const addAddress = async (req, res) => {
 
 const getAddress = async (req, res) => {
   const userId = req.headers.id;
-  console.log("user", userId);
   try {
     const address = await Address.findOne({ userId });
     return res.status(200).json({ status: true, address });
@@ -34,22 +33,44 @@ const getAddress = async (req, res) => {
 
 const editAddress = async (req, res) => {
   const userId = req.headers.id;
-  console.log("body", req.body);
   try {
-    const updated = await Address.updateOne(
-      { userId },
-      {
+    const availableAddress = await Address.findOne({ userId });
+    if (availableAddress) {
+      const updated = await Address.updateOne(
+        { userId },
+        {
+          address: req.body.address,
+          city: req.body.city,
+          state: req.body.state,
+          country: req.body.country,
+        }
+      );
+      if (updated.acknowledged) {
+        const address = await Address.findOne({ userId });
+        return res.status(200).json({
+          status: true,
+          address,
+          message: "Address successfully updated",
+        });
+      }
+    } else {
+      const created = await Address.create({
+        userId,
         address: req.body.address,
         city: req.body.city,
         state: req.body.state,
         country: req.body.country,
-      }
-    );
-    return res
-      .status(200)
-      .json({ status: true, message: "Address updated!", updated });
+      });
+      return res.status(200).json({
+        status: true,
+        address: created,
+        message: "Address successfully updated",
+      });
+    }
   } catch (err) {
-    return res.status(500).json({ status: true, error: err });
+    return res
+      .status(500)
+      .json({ status: true, error: "Internal server error" });
   }
 };
 

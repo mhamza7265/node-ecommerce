@@ -13,7 +13,6 @@ const registerUser = async (req, res) => {
     password,
     passwordCreated,
   } = req.body;
-  console.log("user", req.body);
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
   try {
@@ -88,8 +87,6 @@ const editUser = async (req, res) => {
   const currentPw = req.body.current_pw;
   const newPw = req.body.new_pw;
   const userId = req.headers.id;
-  console.log("newPw", newPw);
-  console.log("currentPw", currentPw);
   if (newPw !== "" && newPw !== undefined && newPw !== null) {
     if (currentPw == null || currentPw == undefined || currentPw == "") {
       return res
@@ -105,7 +102,6 @@ const editUser = async (req, res) => {
     const user = await User.findOne({ _id: userId });
     if (currentPw !== null && currentPw !== undefined && currentPw !== "") {
       const comparePw = await bcrypt.compare(currentPw, user.password);
-      console.log("compare", comparePw);
       if (comparePw && newPw !== undefined) {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(newPw, salt);
@@ -140,7 +136,6 @@ const getCurrentUser = async (req, res) => {
   const id = req.headers.id;
   try {
     const user = await User.findOne({ _id: id });
-    console.log("current-user", user);
     return res.json({
       status: true,
       user: {
@@ -169,7 +164,6 @@ const updatePassword = async (req, res) => {
     const userId = verify.id;
     const user = await User.findOne({ _id: userId });
     const comparePw = await bcrypt.compare(currentPw, user.password);
-    console.log("compare", comparePw);
 
     if (comparePw) {
       const salt = await bcrypt.genSalt(10);
@@ -181,7 +175,6 @@ const updatePassword = async (req, res) => {
           passwordCreated: true,
         }
       );
-      console.log("update", updated);
       if (updated.acknowledged) {
         return res
           .status(200)

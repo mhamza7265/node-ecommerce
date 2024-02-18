@@ -10,11 +10,7 @@ const initiateLogin = (req, res) => {
 
 // Callback URL for handling the Google Login response
 const handleGoogleLogin = async (req, res) => {
-  console.log("handlegoogle");
   const code = req.query.code;
-  console.log("code", code);
-  console.log("reqBody", req.body);
-
   try {
     // Exchange authorization code for access token
     const { data } = await axios.post("https://oauth2.googleapis.com/token", {
@@ -24,7 +20,6 @@ const handleGoogleLogin = async (req, res) => {
       redirect_uri: process.env.REDIRECT_URI,
       grant_type: "authorization_code",
     });
-    console.log("handlingdata", data);
 
     const { access_token, id_token } = data;
 
@@ -37,8 +32,6 @@ const handleGoogleLogin = async (req, res) => {
     );
     // Code to handle user authentication and retrieval using the profile data
     // res.json({ status: true, profile });
-
-    console.log("profile", profile);
 
     res.redirect(
       `http://localhost:5173/login?email=${profile.email}&name=${profile.name}&picture=${profile.picture}`

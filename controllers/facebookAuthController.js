@@ -4,7 +4,6 @@ require("dotenv").config();
 // Initiates the Google Login flow
 const initiateFBLogin = (req, res) => {
   const url = `https://www.facebook.com/v13.0/dialog/oauth?display=popup&client_id=${process.env.APP_ID}&redirect_uri=${process.env.FB_REDIRECT_URI}&scope=public_profile`;
-  console.log("initiate fb");
   return res.redirect(url);
 };
 
@@ -20,7 +19,6 @@ const handleFBLogin = async (req, res) => {
     const { data } = await axios.post(
       `https://graph.facebook.com/v13.0/oauth/access_token?client_id=${process.env.APP_ID}&client_secret=${process.env.APP_SECRET}&code=${code}&redirect_uri=${process.env.FB_REDIRECT_URI}`
     );
-    // console.log("handlingdata", data);
 
     const { access_token } = data;
 
