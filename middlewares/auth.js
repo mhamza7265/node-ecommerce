@@ -21,7 +21,11 @@ const authenticateUser = async (req, res, next) => {
       }
     }
   } catch (err) {
-    return res.json({ status: false, error: "Login token required!" });
+    return res.json({
+      status: false,
+      type: "loginToContinue",
+      error: "Please login to continue",
+    });
   }
 };
 

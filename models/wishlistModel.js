@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const mongoosePaginate = require("mongoose-paginate-v2");
 
 const wishlistSchema = new mongoose.Schema({
   userId: {
@@ -64,6 +65,7 @@ const wishlistSchema = new mongoose.Schema({
   },
 });
 
+wishlistSchema.plugin(mongoosePaginate);
 const Wishlist = mongoose.model("Wishlist", wishlistSchema);
 
 module.exports = Wishlist;

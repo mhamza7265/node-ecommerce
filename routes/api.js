@@ -50,10 +50,13 @@ const {
   getAllProducts,
   getProductsByCategory,
   deleteSingleProduct,
+  getBestSellingProducts,
   getSingleProduct,
   updateProduct,
   filterProducts,
   productAvailableQuantity,
+  productQuantityMultiple,
+  getProductsByPage,
 } = require("../controllers/productController");
 
 const {
@@ -95,6 +98,7 @@ const {
 const {
   configureWishlist,
   wishlistQuantity,
+  getWishlistWithPages,
   getWishlist,
 } = require("../controllers/wishlistController");
 
@@ -138,6 +142,9 @@ app.get("/product/single/:id", getSingleProduct);
 app.get("/product/:id", getProductsByCategory);
 app.post("/products/filter", filterProducts);
 app.get("/product/quantity/:prodId", productAvailableQuantity);
+app.post("/products", productQuantityMultiple);
+app.get("/products/bestsell", getBestSellingProducts);
+app.get("/products/listing", getProductsByPage);
 
 app.post("/register", userValidation, handleUserValidationErrors, registerUser);
 app.post("/login", loginUser);
@@ -186,6 +193,7 @@ app.post(
   configureWishlist
 );
 app.get("/wishlist", getWishlist);
+app.get("/wishlist/listing", getWishlistWithPages);
 app.get("/wishlist/qty", wishlistQuantity);
 
 app.use(upload.any(), checkRoleMiddleware); //checkrole middleware

@@ -1,5 +1,8 @@
 const Category = require("../models/categoryModel");
 const Product = require("../models/productModel");
+const Checkout = require("../models/checkoutModel");
+const mongoose = require("mongoose");
+var _ = require("lodash");
 
 const addProduct = async (req, res) => {
   const category = req.body.category;
@@ -84,6 +87,66 @@ const getProductsByCategory = async (req, res) => {
   }
 };
 
+const getBestSellingProducts = async (req, res) => {
+  try {
+    const productIds = await Checkout.aggregate([
+      // Project the cartItems.0 array
+      { $project: { cartItems: { $slice: ["$cartItems", 1] } } },
+      // Unwind the cartItems.0 array
+      { $unwind: "$cartItems" },
+      // Map over each object in the cartItems.0 array to retrieve the productId
+      {
+        $project: {
+          productId: {
+            $map: {
+              input: { $objectToArray: "$cartItems" },
+              as: "item",
+              in: "$$item.v.productId",
+            },
+          },
+        },
+      },
+      // Unwind the productId array
+      { $unwind: "$productId" },
+      // Group by productId and count occurrences
+      { $group: { _id: "$productId", count: { $sum: 1 } } },
+      // Filter documents where count is greater than 0
+      { $match: { count: { $gt: 0 } } },
+      // Sort by count in descending order
+      { $sort: { count: -1 } },
+      // Limit to top 10 results
+      { $limit: 10 },
+      // Project to include productId and count, and exclude _id
+      { $project: { productId: "$_id", count: 1, _id: 0 } },
+    ]);
+    const Ids = productIds.map((item) => item.productId);
+    const product = await Product.find({ _id: { $in: Ids } });
+    const prodIds = _.keyBy(productIds, "productId");
+    return res
+      .status(200)
+      .json({ status: true, products: { productIds: prodIds, product } });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ status: false, error: "Internal server error" });
+  }
+};
+
+const getProductsByPage = async (req, res) => {
+  const currentPage = req.query.page;
+  let page = 1;
+  const limit = 10;
+  if (currentPage) page = currentPage;
+  try {
+    const products = await Product.paginate({}, { page, limit });
+    return res.status(200).json({ status: true, products });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ status: false, error: "Internal server error" });
+  }
+};
+
 const deleteSingleProduct = async (req, res) => {
   const id = req.params.id;
   try {
@@ -103,8 +166,13 @@ const filterProducts = async (req, res) => {
     const filtered = await Product.find({
       name: { $regex: product, $options: "i" },
     });
+    const filteredNames = filtered.map((item) => item.name);
     if (product !== "") {
-      return res.status(200).json({ status: true, filtered });
+      if (req.body.autoComplete) {
+        return res.status(200).json({ status: true, filteredNames });
+      } else {
+        return res.status(200).json({ status: true, filtered });
+      }
     } else {
       return res
         .status(500)
@@ -130,13 +198,37 @@ const productAvailableQuantity = async (req, res) => {
   }
 };
 
+const productQuantityMultiple = async (req, res) => {
+  const productsId = req.body.productsId;
+  ids = productsId?.split(",");
+  try {
+    const product = await Product.find(
+      {
+        _id: {
+          $in: ids,
+        },
+      },
+      { quantity: 1 }
+    );
+    const products = _.keyBy(product, "_id");
+    return res.status(200).json({ status: true, products });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ status: false, error: "Internal server error" });
+  }
+};
+
 module.exports = {
   addProduct,
   getAllProducts,
   getSingleProduct,
   updateProduct,
   getProductsByCategory,
+  getBestSellingProducts,
   deleteSingleProduct,
   filterProducts,
   productAvailableQuantity,
+  productQuantityMultiple,
+  getProductsByPage,
 };

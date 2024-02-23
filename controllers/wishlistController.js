@@ -5,7 +5,10 @@ const configureWishlist = async (req, res) => {
   const userId = req.headers.id;
   try {
     const product = await Product.findOne({ _id: req.body.prodId });
-    const wishListItem = await Wishlist.findOne({ productId: req.body.prodId });
+    const wishListItem = await Wishlist.findOne({
+      userId,
+      productId: req.body.prodId,
+    });
     if (
       (wishListItem == null || wishListItem == undefined) &&
       product !== null &&
@@ -28,6 +31,7 @@ const configureWishlist = async (req, res) => {
       product !== undefined
     ) {
       const wishListUpdated = await Wishlist.deleteOne({
+        userId,
         productId: req.body.prodId,
       });
       if (wishListUpdated.acknowledged)
@@ -50,6 +54,21 @@ const getWishlist = async (req, res) => {
   }
 };
 
+const getWishlistWithPages = async (req, res) => {
+  const currentPage = req.query.page;
+  const userId = req.headers.id;
+  let page = 1;
+  const limit = 5;
+
+  if (currentPage) page = currentPage;
+  try {
+    const wishlist = await Wishlist.paginate({ userId }, { page, limit });
+    return res.status(200).json({ status: true, wishlist });
+  } catch (err) {
+    return res.status(500).json({ status: false, error: err });
+  }
+};
+
 const wishlistQuantity = async (req, res) => {
   const userId = req.headers.id;
   try {
@@ -62,4 +81,9 @@ const wishlistQuantity = async (req, res) => {
   }
 };
 
-module.exports = { configureWishlist, getWishlist, wishlistQuantity };
+module.exports = {
+  configureWishlist,
+  getWishlist,
+  getWishlistWithPages,
+  wishlistQuantity,
+};
